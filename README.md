@@ -2,7 +2,7 @@
 
 ## Gitea on Katacoda
 
-[https://katacoda.com/courses/openshift/playground](https://katacoda.com/courses/openshift/playground)
+https://katacoda.com/courses/openshift/playground
 
 ```
 oc new-project mygitea
@@ -64,11 +64,14 @@ routes/go-web   go-web-myapp.2886795306-80-simba02.environments.katacoda.com    
 
 You should see `Welcome to my website!`
 
-## Scale app to 4 instances
+## Scale app to 5 instances
 
 ```
-
+oc scale dc/go-web --replicas=5
+oc get all
 ```
+
+Observe.
 
 ## Configure build web hook
 
@@ -94,3 +97,151 @@ Click `Add Webhook`.
 ## Make a change to the app
 
 In Gitea edit `main.go` file, change string on line `fmt.Fprintf(w, "Welcome to my website!")` to something different and save changes. With `oc get all` you can see now, that new build was started and in a moment, new version of your app will be deployed.
+
+## Deployment Config: Recreate Strategy
+
+```yaml
+strategy:
+  type: Recreate
+```
+
+https://docs.openshift.org/latest/dev_guide/deployments/deployment_strategies.html#recreate-strategy
+
+## Deployment Config: Rolling Strategy
+
+```
+oc edit dc/go-web
+```
+
+Vim will be opened by default, if you don't know how to use it, run:
+
+```
+EDITOR=nano oc edit dc/go-web
+```
+
+```yaml
+strategy:
+  type: Rolling
+  rollingParams:
+    updatePeriodSeconds: 15
+    timeoutSeconds: 60
+```
+
+https://docs.openshift.org/latest/dev_guide/deployments/deployment_strategies.html#rolling-strategy
+
+### Break the code and see what happens
+
+Instead of:
+```go
+  http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
+    w.Write([]byte("Welcome to my website!"))
+  })
+```
+
+Try:
+```go
+  http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
+    w.WriteHeader(http.StatusInternalServerError)
+    w.Write([]byte("500 - Something bad happened!"))
+  })
+```
+
+### And now without canary
+
+```
+oc edit dc/go-web
+```
+
+And delete following sections:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 10
+  timeoutSeconds: 1
+  periodSeconds: 10
+  successThreshold: 1
+```
+
+and
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 5
+  timeoutSeconds: 1
+  periodSeconds: 10
+  successThreshold: 1
+  failureThreshold: 3
+```
+
+Observe.. and when you have enough:
+
+```
+oc rollout undo --to-revision=2 dc/go-web
+```
+
+# Plan B
+
+If Katacoda is breaking too much for you, fork my repo ocp-go-webserver on GitHub: https://github.com/pschiffe/ocp-go-webserver and use that as a repository instead of Gitea. You can configure webhook as well the same way as described above.
+
+# Plan C
+
+This section doesn't need git or source or anything, just demonstrates advanced deployment strategies.
+
+## Blue - Green Deployment
+
+```
+oc new-project blue-green
+```
+
+```
+oc new-app openshift/deployment-example:v1 --name=example-green
+oc new-app openshift/deployment-example:v2 --name=example-blue
+```
+
+```
+oc expose svc/example-green --name=bluegreen-example
+```
+
+```
+oc edit route/bluegreen-example
+```
+
+```yaml
+to:
+  name: example-blue
+```
+
+https://docs.openshift.org/latest/dev_guide/deployments/advanced_deployment_strategies.html#advanced-deployment-strategies-blue-green-deployments
+
+## A/B Deployment
+
+```
+oc new-project ab
+```
+
+```
+oc new-app openshift/deployment-example:v1 --name=ab-example-a
+oc new-app openshift/deployment-example:v2 --name=ab-example-b
+```
+
+```
+oc expose svc/ab-example-a --name=ab-example
+```
+
+```
+oc set route-backends ab-example ab-example-a=66 ab-example-b=33
+```
+
+```
+oc annotate --overwrite routes/ab-example haproxy.router.openshift.io/disable_cookies=true
+```
+
+https://docs.openshift.org/latest/dev_guide/deployments/advanced_deployment_strategies.html#advanced-deployment-a-b-deployment
