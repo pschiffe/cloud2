@@ -85,6 +85,6 @@ Now copy this webhook to the repo settings in your Gitea. There is `Settings` bu
 
 Click `Add Webhook`.
 
-## Made a change to the app
+## Make a change to the app
 
 In Gitea edit `main.go` file, change string on line `fmt.Fprintf(w, "Welcome to my website!")` to something different and save changes. With `oc get all` you can see now, that new build was started and in a moment, new version of your app will be deployed.
