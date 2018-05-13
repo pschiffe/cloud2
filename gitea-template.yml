@@ -85,10 +85,8 @@ objects:
           resources: {}
           terminationMessagePath: /dev/termination-log
           volumeMounts:
-          - name: gitea-repositories
-            mountPath: /gitea-repositories
-          - name: gitea-config
-            mountPath: /home/gitea/conf
+          - name: gitea
+            mountPath: /home/gitea
           readinessProbe:
               httpGet:
                 path: /
