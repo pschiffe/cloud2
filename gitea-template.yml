@@ -85,8 +85,10 @@ objects:
           resources: {}
           terminationMessagePath: /dev/termination-log
           volumeMounts:
-          - name: gitea
-            mountPath: /home/gitea
+          - name: gitea-repositories
+            mountPath: /home/gitea/gitea-repositories
+          - name: gitea-config
+            mountPath: /home/gitea/conf
           readinessProbe:
               httpGet:
                 path: /
@@ -112,7 +114,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - name: gitea
+        - name: gitea-repositories
+          emptyDir: {}
+        - name: gitea-config
           emptyDir: {}
     test: false
     triggers:
@@ -128,7 +132,7 @@ parameters:
   value: "docker.io/wkulhanek/gitea"
   required: true
 - name: GITEA_VERSION
-  displayName: Gogs Image Version Tag
-  description: The tag for the Gogs Image to use
+  displayName: Gitea Image Version Tag
+  description: The tag for the Gitea Image to use
   value: "latest"
   required: true
