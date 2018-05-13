@@ -64,6 +64,12 @@ routes/go-web   go-web-myapp.2886795306-80-simba02.environments.katacoda.com    
 
 You should see `Welcome to my website!`
 
+## Scale app to 4 instances
+
+```
+
+```
+
 ## Configure build web hook
 
 In OpenShift, get url of webhook:

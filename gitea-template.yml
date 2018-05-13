@@ -112,9 +112,7 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
-        - name: gitea-repositories
-          emptyDir: {}
-        - name: gitea-config
+        - name: gitea
           emptyDir: {}
     test: false
     triggers:
