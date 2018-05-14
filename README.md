@@ -47,7 +47,7 @@ Copy raw url of file `openshift/templates/go-web.yml`. In OpenShift on Katacoda,
 
 ```
 oc new-project myapp
-oc new-app -f http://gitea-mygitea.2886795306-80-simba02.environments.katacoda.com/myuser/ocp-go-webserver/raw/branch/master/openshift/templates/go-web.yml --param=SOURCE_REPOSITORY_URL=http://gitea-mygitea.2886795306-80-simba02.environments.katacoda.com/myuser/ocp-go-webserver.git
+oc new-app -f https://github.com/pschiffe/ocp-go-webserver-play/raw/master/openshift/templates/go-web.yml --param=SOURCE_REPOSITORY_URL=https://github.com/pschiffe/ocp-go-webserver-play.git
 oc get all
 ```
 Wait until:
